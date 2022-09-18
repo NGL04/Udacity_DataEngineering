@@ -41,7 +41,10 @@ def drop_tables(cur, conn):
 
 def create_tables(cur, conn):
     """
-    Creates each table using the queries in `create_table_queries` list. 
+    Creates each table using the queries in `create_table_queries` list.
+
+    :cur: cursor
+    :conn: connector
     """
     for query in create_table_queries:
         cur.execute(query)
@@ -67,6 +70,8 @@ def main():
     create_tables(cur, conn)
 
     conn.close()
+
+    print("\nSuccessfully dropped and (re)created tables.")
 
 
 if __name__ == "__main__":
