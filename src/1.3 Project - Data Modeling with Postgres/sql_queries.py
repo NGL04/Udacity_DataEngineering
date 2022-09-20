@@ -9,8 +9,8 @@ time_table_drop = "DROP TABLE IF EXISTS time;"
 # CREATE TABLES
 
 songplay_table_create = ("""
-    CREATE TABLE IF NOT EXISTS songplays (start_time bigint, user_id int, level text, song_id text, \
-        artist_id text, session_id int, location text, user_agent text);
+    CREATE TABLE IF NOT EXISTS songplays (start_time bigint, user_id int NOT NULL, level text, song_id text, \
+        artist_id text, session_id int, location text, user_agent text, UNIQUE (start_time, user_id));
 """)
 
 user_table_create = ("""
@@ -18,11 +18,11 @@ user_table_create = ("""
 """)
 
 song_table_create = ("""
-    CREATE TABLE IF NOT EXISTS songs (song_id text PRIMARY KEY, title text, artist_id text, year int, duration decimal);
+    CREATE TABLE IF NOT EXISTS songs (song_id text PRIMARY KEY, title text NOT NULL, artist_id text NOT NULL, year int, duration decimal);
 """)
 
 artist_table_create = ("""
-    CREATE TABLE IF NOT EXISTS artists (artist_id text PRIMARY KEY, name text, location text, latitude decimal, longitude decimal);
+    CREATE TABLE IF NOT EXISTS artists (artist_id text PRIMARY KEY, name text NOT NULL, location text, latitude decimal, longitude decimal);
 """)
 
 time_table_create = ("""
