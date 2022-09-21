@@ -18,13 +18,13 @@ def process_song_file(cur, filepath):
     df = pd.read_json(filepath, lines=True)
 
     # insert song record
-    song_data = (str(df.song_id[0]), str(df.title[0]), str(df.artist_id[0]), int(df.year[0]), float(df.duration[0]))
-    print(song_data)
+    song_data = df[['song_id', 'title', 'artist_id', 'year', 'duration']].values[0].tolist()
+    # print(song_data)
     cur.execute(song_table_insert, song_data)
 
     # insert artist record
     artist_data = (str(df.artist_id[0]), str(df.artist_name[0]), str(df.artist_location[0]), df.artist_latitude[0], df.artist_longitude[0])
-    print(artist_data)
+    # print(artist_data)
     cur.execute(artist_table_insert, artist_data)
 
     # Currently inserts 'NaN' when no value for latitude and longitude provided (=null in JSON)
@@ -52,21 +52,22 @@ def process_log_file(cur, filepath):
     # convert timestamp column to datetime
     t = pd.to_datetime(df.ts, unit='ms')
 
-    # insert time data records
-    # time_data =
-    # column_labels =
-    # time_df =
-
-    timestamps = list(df.ts)
-    hours = list(t.dt.hour.values)
-    days = list(t.dt.day.values)
-    weeks = list(t.dt.isocalendar().week.values)
-    months = list(t.dt.month.values)
-    years = list(t.dt.year.values)
-    weekdays = list(t.dt.weekday.values)
-    column_labels = ('datetime', 'hour', 'day', 'week', 'month', 'year', 'weekday')
-    time_df = pd.DataFrame(list(zip(timestamps, hours, days, weeks, months, years, weekdays)), columns=column_labels)
+    # My solution; not ideal
+    # timestamps = list(df.ts)
+    # hours = list(t.dt.hour.values)
+    # days = list(t.dt.day.values)
+    # weeks = list(t.dt.isocalendar().week.values)
+    # months = list(t.dt.month.values)
+    # years = list(t.dt.year.values)
+    # weekdays = list(t.dt.weekday.values)
+    # column_labels = ('datetime', 'hour', 'day', 'week', 'month', 'year', 'weekday')
+    # time_df = pd.DataFrame(list(zip(timestamps, hours, days, weeks, months, years, weekdays)), columns=column_labels)
     #time_df.head()
+
+    # Suggested solution by reviewer
+    time_data = (df.ts, t.dt.hour, t.dt.day, t.dt.weekofyear, t.dt.month, t.dt.year, t.dt.weekday)
+    column_labels = ('start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday')
+    time_df = pd.DataFrame(dict(zip(column_labels, time_data)))
 
     for i, row in time_df.iterrows():
         cur.execute(time_table_insert, list(row))
