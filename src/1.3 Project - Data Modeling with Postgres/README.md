@@ -17,3 +17,7 @@ With the derived database and from the JSON data files, Sparkify can conduct fur
 - Clear all tables by running `create_tables.py`
 - Process data by running `etl.py`
 - Conduct test using `test.ipynb`
+
+### ER diagram:
+
+![ER-diagram.png](ER-diagram.png)
