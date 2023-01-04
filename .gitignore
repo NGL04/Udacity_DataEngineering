@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Config files
+/src/2.3 Implementing Data Warehouses on AWS/dwh.cfg
+/src/2.4 Project - Data Warehouse/dwh.cfg
