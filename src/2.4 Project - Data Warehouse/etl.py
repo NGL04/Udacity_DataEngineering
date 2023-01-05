@@ -7,12 +7,14 @@ def load_staging_tables(cur, conn):
     for query in copy_table_queries:
         cur.execute(query)
         conn.commit()
+        print("Finished loading {}".format(query))
 
 
 def insert_tables(cur, conn):
     for query in insert_table_queries:
         cur.execute(query)
         conn.commit()
+        print("Finished loading {}".format(query))
 
 
 def main():
@@ -21,8 +23,10 @@ def main():
 
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))
     cur = conn.cursor()
-    
+
+    print("Start loading staging tables...\n")
     load_staging_tables(cur, conn)
+    print("Start inserting in star schema tables...\n")
     insert_tables(cur, conn)
 
     conn.close()
