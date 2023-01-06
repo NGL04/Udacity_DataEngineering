@@ -1,19 +1,17 @@
 # 2.4 Project - Data Warehouse with AWS Redshift
 
----
+
 ## Introduction
 
 A music streaming startup, Sparkify, has grown their user base and song database and want to move their processes and data onto the cloud. Their data resides in S3, in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
 
 As their data engineer, we build an ETL pipeline that extracts their data from S3, stages them in Redshift, and transforms data into a set of dimensional tables for their analytics team to continue finding insights into what songs their users are listening to.
 
----
 
 ## Project Description
 
 In this project, we apply what we've learned on data warehouses and AWS to build an ETL pipeline for a database hosted on Redshift. We load data from S3 to staging tables on Redshift and execute SQL statements that create the analytics tables from these staging tables.
 
----
 
 ## Project Datasets
 
@@ -48,7 +46,6 @@ And below is an example of what the data in a log file, `2018-11-12-events.json`
 
 ![img.png](example_log_data.png)
 
----
 
 ## Schema for Song Play Analysis
 
@@ -70,7 +67,6 @@ Using the song and event datasets, we create a star schema optimized for queries
 - `time` - timestamps of records in songplays broken down into specific units
   - start_time, hour, day, week, month, year, weekday
 
----
 
 ## Project Files
 
@@ -85,7 +81,6 @@ Using the song and event datasets, we create a star schema optimized for queries
 - `dwh.cfg`
   - Here we define the config parameters used (IAM role, Redshift cluster metadata, S3 data) - Template must be filled with credentials
 
----
 
 ## How to run the project
 
