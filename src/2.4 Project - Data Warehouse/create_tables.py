@@ -22,6 +22,9 @@ def create_tables(cur, conn):
 
 
 def main():
+    """
+    Drop and (re)create tables for this project
+    """
     config = configparser.ConfigParser()
     config.read('dwh.cfg')
 

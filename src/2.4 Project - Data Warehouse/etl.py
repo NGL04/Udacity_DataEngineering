@@ -24,6 +24,9 @@ def insert_tables(cur, conn):
 
 
 def main():
+    """
+    Load input data into staging tables and fill star schema tables
+    """
     config = configparser.ConfigParser()
     config.read('dwh.cfg')
 
