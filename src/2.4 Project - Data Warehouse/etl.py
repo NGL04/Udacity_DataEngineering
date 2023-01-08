@@ -4,6 +4,9 @@ from sql_queries import copy_table_queries, insert_table_queries
 
 
 def load_staging_tables(cur, conn):
+    """
+    Load the staging tables for log data and songs from input files
+    """
     for query in copy_table_queries:
         cur.execute(query)
         conn.commit()
@@ -11,6 +14,9 @@ def load_staging_tables(cur, conn):
 
 
 def insert_tables(cur, conn):
+    """
+    Fill star schema tables using data from staging tables
+    """
     for query in insert_table_queries:
         cur.execute(query)
         conn.commit()
@@ -34,3 +40,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

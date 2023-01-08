@@ -7,18 +7,18 @@ config.read('dwh.cfg')
 
 # DROP TABLES
 
-staging_events_table_drop = "DROP TABLE IF EXISTS STAGING_EVENTS"
-staging_songs_table_drop = "DROP TABLE IF EXISTS STAGING_SONGS"
-songplay_table_drop = "DROP TABLE IF EXISTS SONGPLAYS"
-user_table_drop = "DROP TABLE IF EXISTS USERS"
-song_table_drop = "DROP TABLE IF EXISTS SONGS"
-artist_table_drop = "DROP TABLE IF EXISTS ARTISTS"
-time_table_drop = "DROP TABLE IF EXISTS TIMES"
+staging_events_table_drop = "DROP TABLE IF EXISTS staging_events"
+staging_songs_table_drop = "DROP TABLE IF EXISTS staging_songs"
+songplay_table_drop = "DROP TABLE IF EXISTS songplays"
+user_table_drop = "DROP TABLE IF EXISTS users"
+song_table_drop = "DROP TABLE IF EXISTS songs"
+artist_table_drop = "DROP TABLE IF EXISTS artists"
+time_table_drop = "DROP TABLE IF EXISTS time"
 
 # CREATE TABLES
 
 staging_events_table_create = ("""
-CREATE TABLE IF NOT EXISTS STAGING_EVENTS
+CREATE TABLE IF NOT EXISTS staging_events
 (
   artist             VARCHAR(300),
   auth               VARCHAR(20),
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS STAGING_EVENTS
 
 
 staging_songs_table_create = ("""
-CREATE TABLE IF NOT EXISTS STAGING_SONGS
+CREATE TABLE IF NOT EXISTS staging_songs
 (
     num_songs           INTEGER,
     artist_id           VARCHAR(50),
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS STAGING_SONGS
 # FACT TABLE
 
 songplay_table_create = ("""
-CREATE TABLE IF NOT EXISTS SONGPLAYS 
+CREATE TABLE IF NOT EXISTS songplays
 (
     sp_start_time       TIMESTAMP,
     sp_user_id          INTEGER,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS SONGPLAYS
 # DIMENSION TABLES
 
 user_table_create = ("""
-CREATE TABLE IF NOT EXISTS USERS
+CREATE TABLE IF NOT EXISTS users
 (
     u_user_id           INT NOT NULL PRIMARY KEY,
     u_first_name        VARCHAR(50),
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS USERS
 """)
 
 song_table_create = ("""
-CREATE TABLE IF NOT EXISTS SONGS
+CREATE TABLE IF NOT EXISTS songs
 (
     s_song_id           VARCHAR(50) NOT NULL PRIMARY KEY,
     s_title             VARCHAR(200),
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS SONGS
 """)
 
 artist_table_create = ("""
-CREATE TABLE IF NOT EXISTS ARTISTS
+CREATE TABLE IF NOT EXISTS artists
 (
     a_artist_id         VARCHAR(50) NOT NULL PRIMARY KEY,
     a_name              VARCHAR(200),
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS ARTISTS
 """)
 
 time_table_create = ("""
-CREATE TABLE IF NOT EXISTS TIMES
+CREATE TABLE IF NOT EXISTS time
 (
     t_start_time        TIMESTAMP NOT NULL PRIMARY KEY,
     t_hour              SMALLINT,
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS TIMES
 # STAGING TABLES
 
 staging_events_copy = ("""
-copy STAGING_EVENTS from {}
+copy staging_events from {}
     credentials 'aws_iam_role={}'
     FORMAT AS JSON {};
 """).format(
@@ -138,7 +138,7 @@ copy STAGING_EVENTS from {}
 
 
 staging_songs_copy = ("""
-COPY STAGING_SONGS FROM {}
+COPY staging_songs FROM {}
     credentials 'aws_iam_role={}' 
     FORMAT AS JSON 'auto';
 """).format(
@@ -149,7 +149,7 @@ COPY STAGING_SONGS FROM {}
 # INSERT DATA IN STAR SCHMEA TABLES
 
 songplay_table_insert = ("""
-INSERT INTO SONGPLAYS (sp_start_time, sp_user_id, sp_level, sp_song_id, sp_artist_id, sp_session_id, 
+INSERT INTO songplays (sp_start_time, sp_user_id, sp_level, sp_song_id, sp_artist_id, sp_session_id, 
                         sp_location, sp_user_agent)
 SELECT 
        DISTINCT TIMESTAMP 'epoch' + (se.ts / 1000) * INTERVAL '1 second' AS sp_start_time,
@@ -160,42 +160,42 @@ SELECT
        se.sessionId AS sp_session_id,
        se.location AS sp_location,
        se.userAgent AS sp_user_agent
-FROM STAGING_EVENTS se
-JOIN STAGING_SONGS ss  ON (se.artist = ss.artist_name AND se.song = ss.title AND se.length = ss.duration)
+FROM staging_events se
+JOIN staging_songs ss  ON (se.artist = ss.artist_name AND se.song = ss.title AND se.length = ss.duration)
 """)
 
 user_table_insert = ("""
-INSERT INTO USERS (u_user_id, u_first_name, u_last_name, u_gender, u_level)
+INSERT INTO users (u_user_id, u_first_name, u_last_name, u_gender, u_level)
 SELECT  DISTINCT se.userId AS u_user_id,
         se.firstName AS u_first_name,
         se.lastName AS u_last_name,
         se.gender AS u_gender,
         se.level AS u_level
-FROM STAGING_EVENTS se WHERE se.userId IS NOT NULL 
+FROM staging_events se WHERE se.userId IS NOT NULL 
 """)
 
 song_table_insert = ("""
-INSERT INTO SONGS (s_song_id, s_title, s_artist_id, s_year, s_duration)
+INSERT INTO songs (s_song_id, s_title, s_artist_id, s_year, s_duration)
 SELECT  DISTINCT ss.song_id AS s_song_id,
         ss.title AS s_title,
         ss.artist_id AS s_artist_id,
         ss.year AS s_year,
         ss.duration AS s_duration
-FROM STAGING_SONGS ss WHERE ss.song_id IS NOT NULL 
+FROM staging_songs ss WHERE ss.song_id IS NOT NULL 
 """)
 
 artist_table_insert = ("""
-INSERT INTO ARTISTS (a_artist_id, a_name, a_location, a_latitude, a_longitude)
+INSERT INTO artists (a_artist_id, a_name, a_location, a_latitude, a_longitude)
 SELECT  DISTINCT ss.artist_id AS a_artist_id,
         ss.artist_name AS a_name,
         ss.artist_location AS a_location,
         ss.artist_latitude AS a_latitude,
         ss.artist_longitude AS a_longitude
-FROM STAGING_SONGS ss WHERE ss.artist_id IS NOT NULL
+FROM staging_songs ss WHERE ss.artist_id IS NOT NULL
 """)
 
 time_table_insert = ("""
-INSERT INTO TIMES (t_start_time, t_hour, t_day, t_week, t_month, t_year, t_weekday)        
+INSERT INTO time (t_start_time, t_hour, t_day, t_week, t_month, t_year, t_weekday)        
 SELECT  DISTINCT TIMESTAMP 'epoch' + (se.ts / 1000) * INTERVAL '1 second' AS t_start_time,
         EXTRACT(hour FROM t_start_time),
         EXTRACT(day FROM t_start_time),
@@ -203,7 +203,7 @@ SELECT  DISTINCT TIMESTAMP 'epoch' + (se.ts / 1000) * INTERVAL '1 second' AS t_s
         EXTRACT(month FROM t_start_time),
         EXTRACT(year FROM t_start_time),
         EXTRACT(dow FROM t_start_time)
-FROM STAGING_EVENTS se WHERE se.userId IS NOT NULL
+FROM staging_events se WHERE se.userId IS NOT NULL
 
 """)
 
