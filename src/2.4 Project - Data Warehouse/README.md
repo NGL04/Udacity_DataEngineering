@@ -82,8 +82,7 @@ Using the song and event datasets, we create a star schema optimized for queries
 
 ## How to run the project
 
-1. Fill config file `dwh.cfg` with required config parameters
-2. Create Redshift cluster with and add parameters to `dwh.cfg`
-3. Run `create_tables.py` to create all required tables
-4. Run `etl.py` to load data from S3 into staging tables on Redshift and process into star schema table set
-5. Try out queries :)
+1. Create Redshift cluster and fill config file `dwh.cfg` with required parameters
+2. Run `create_tables.py` to create all required tables
+3. Run `etl.py` to load data from S3 into staging tables on Redshift and process into star schema table set
+4. Try out queries :)
