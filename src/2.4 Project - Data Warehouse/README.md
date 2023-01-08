@@ -63,7 +63,7 @@ Using the song and event datasets, we create a star schema optimized for queries
 - `songs` - songs in music database
   - song_id, title, artist_id, year, duration
 - `artists` - artists in music database
-  - artist_id, name, location, lattitude, longitude
+  - artist_id, name, location, latitude, longitude
 - `time` - timestamps of records in songplays broken down into specific units
   - start_time, hour, day, week, month, year, weekday
 
@@ -76,16 +76,14 @@ Using the song and event datasets, we create a star schema optimized for queries
   - Here we load data from S3 into staging tables on Redshift and then process that data into analytics tables on Redshift
 - `sql_queries.py` 
   - Here we define SQL statements which will be imported into the two other files above
-- `create_and_drop_redshift_cluster_IaC.ipnyb`
-  - Here we use Infrastructure-as-Code to create and drop our Redshift Cluster
 - `dwh.cfg`
-  - Here we define the config parameters used (IAM role, Redshift cluster metadata, S3 data) - Template must be filled with credentials
+  - Here we define the config parameters used (IAM role, Redshift cluster metadata, S3 data) - must be created and filled with credentials
 
 
 ## How to run the project
 
 1. Fill config file `dwh.cfg` with required config parameters
-2. Create Redshift cluster with `create_and_drop_redshift_cluster_IaC.ipnyb` and add parameters to `dwh.cfg`
+2. Create Redshift cluster with and add parameters to `dwh.cfg`
 3. Run `create_tables.py` to create all required tables
 4. Run `etl.py` to load data from S3 into staging tables on Redshift and process into star schema table set
 5. Try out queries :)
