@@ -47,13 +47,13 @@ CREATE TABLE IF NOT EXISTS staging_songs
 (
     num_songs           INTEGER,
     artist_id           VARCHAR(50),
-    artist_latitude     VARCHAR(200),
-    artist_longitude    VARCHAR(200),
+    artist_latitude     DECIMAL,
+    artist_longitude    DECIMAL,
     artist_location     VARCHAR(300),
     artist_name         VARCHAR(200),
     song_id             VARCHAR(50) NOT NULL PRIMARY KEY,
     title               VARCHAR(200),
-    duration            VARCHAR(25),
+    duration            DECIMAL,
     year                INTEGER
 );
 """)
@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS artists
     artist_id         VARCHAR(50) NOT NULL PRIMARY KEY,
     name              VARCHAR(200),
     location          VARCHAR(300),
-    latitude          VARCHAR(200),
-    longitude         VARCHAR(200)         
+    latitude          DECIMAL,
+    longitude         DECIMAL         
     
 )
 """)
@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS time
 staging_events_copy = ("""
 copy staging_events from {}
     credentials 'aws_iam_role={}'
+    REGION 'us-west-2'
     FORMAT AS JSON {};
 """).format(
     config.get('S3', 'LOG_DATA'),
@@ -140,13 +141,14 @@ copy staging_events from {}
 staging_songs_copy = ("""
 COPY staging_songs FROM {}
     credentials 'aws_iam_role={}' 
+    REGION 'us-west-2'
     FORMAT AS JSON 'auto';
 """).format(
     config.get('S3', 'SONG_DATA'),
     config.get('CLUSTER ROLE', 'DWH_ROLE_ARN')
 )
 
-# INSERT DATA IN STAR SCHMEA TABLES
+# INSERT DATA IN STAR SCHEMA TABLES
 
 songplay_table_insert = ("""
 INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, 
@@ -162,16 +164,20 @@ SELECT
        se.userAgent AS user_agent
 FROM staging_events se
 JOIN staging_songs ss  ON (se.artist = ss.artist_name AND se.song = ss.title AND se.length = ss.duration)
+WHERE se.page = 'NextSong'
 """)
 
 user_table_insert = ("""
 INSERT INTO users (user_id, first_name, last_name, gender, level)
-SELECT  DISTINCT se.userId AS user_id,
-        se.firstName AS first_name,
-        se.lastName AS last_name,
-        se.gender AS gender,
-        se.level AS level
-FROM staging_events se WHERE se.userId IS NOT NULL 
+WITH uniq_staging_events AS (
+    SELECT user_id, first_name, last_name, gender, level,
+           ROW_NUMBER() OVER(PARTITION BY userId ORDER BY ts DESC) AS rank
+    FROM staging_events
+            WHERE userId IS NOT NULL
+)
+SELECT user_id, first_name, last_name, gender, level
+FROM uniq_staging_events
+WHERE rank = 1;
 """)
 
 song_table_insert = ("""
@@ -195,16 +201,22 @@ FROM staging_songs ss WHERE ss.artist_id IS NOT NULL
 """)
 
 time_table_insert = ("""
-INSERT INTO time (start_time, hour, day, week, month, year, weekday)        
-SELECT  DISTINCT TIMESTAMP 'epoch' + (se.ts / 1000) * INTERVAL '1 second' AS start_time,
+INSERT INTO time (start_time, hour, day, week, month, year, weekday)
+WITH uniq_staging_events AS (
+    SELECT ts,
+           ROW_NUMBER() OVER(PARTITION BY ts ORDER BY ts DESC) AS rank
+    FROM staging_events se
+            WHERE se.userId IS NOT NULL
+)
+SELECT  DISTINCT TIMESTAMP 'epoch' + (ts / 1000) * INTERVAL '1 second' AS start_time,
         EXTRACT(hour FROM start_time),
         EXTRACT(day FROM start_time),
         EXTRACT(week FROM start_time),
         EXTRACT(month FROM start_time),
         EXTRACT(year FROM start_time),
-        EXTRACT(dow FROM start_time)
-FROM staging_events se WHERE se.userId IS NOT NULL
-
+        EXTRACT(dow FROM start_time)start_time, hour, day, week, month, year, weekday
+FROM uniq_staging_events
+WHERE rank = 1;
 """)
 
 
