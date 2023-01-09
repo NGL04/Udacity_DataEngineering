@@ -170,12 +170,12 @@ WHERE se.page = 'NextSong'
 user_table_insert = ("""
 INSERT INTO users (user_id, first_name, last_name, gender, level)
 WITH uniq_staging_events AS (
-    SELECT user_id, first_name, last_name, gender, level,
+    SELECT userId, firstName, lastName, gender, level,
            ROW_NUMBER() OVER(PARTITION BY userId ORDER BY ts DESC) AS rank
     FROM staging_events
             WHERE userId IS NOT NULL
 )
-SELECT user_id, first_name, last_name, gender, level
+SELECT userId, firstName, lastName, gender, level
 FROM uniq_staging_events
 WHERE rank = 1;
 """)
@@ -214,7 +214,7 @@ SELECT  DISTINCT TIMESTAMP 'epoch' + (ts / 1000) * INTERVAL '1 second' AS start_
         EXTRACT(week FROM start_time),
         EXTRACT(month FROM start_time),
         EXTRACT(year FROM start_time),
-        EXTRACT(dow FROM start_time)start_time, hour, day, week, month, year, weekday
+        EXTRACT(dow FROM start_time)
 FROM uniq_staging_events
 WHERE rank = 1;
 """)
